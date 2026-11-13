@@ -1,0 +1,26 @@
+{
+  "enabled": {
+    "description": "启用表情包感知",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后不捕获也不注入。"
+  },
+  "hint_enabled": {
+    "description": "注入纠偏提示",
+    "type": "bool",
+    "default": true,
+    "hint": "开启后，本轮含表情包时会告诉模型「这是表情包不是照片」，并禁止追问拍摄地点/衣着/天气。这是修复「把表情包当照片」的核心开关。"
+  },
+  "vision_enabled": {
+    "description": "启用视觉描述（会多一次模型调用）",
+    "type": "bool",
+    "default": false,
+    "hint": "默认关闭以节省内存与 token。开启后会用当前会话的多模态模型描述表情包情绪，同一张图 10 分钟内不重复调用。"
+  },
+  "log_detect": {
+    "description": "记录识别日志",
+    "type": "bool",
+    "default": true,
+    "hint": "在日志里记录每张图片的 sub_type 与判定结果，便于排查。"
+  }
+}

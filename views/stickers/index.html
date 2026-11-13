@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/><title>表情包感知</title>
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--line:#242a35;--text:#e8ecf3;--muted:#8b95a7;
+      --accent:#6ea8fe;--ok:#3fb950;--warn:#d29922}
+@media(prefers-color-scheme:light){:root{--bg:#f6f7f9;--panel:#fff;--line:#e3e6ec;
+      --text:#1a1d23;--muted:#6b7280;--accent:#2563eb}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);
+font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:20px}
+header{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+h1{font-size:19px;margin:0;font-weight:650}.sub{color:var(--muted);font-size:12.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+.stat .k{color:var(--muted);font-size:11.5px;margin-bottom:3px}
+.stat .v{font-size:20px;font-weight:650}
+h2{font-size:14px;margin:20px 0 10px;font-weight:620;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 15px;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:9px;font-size:13px;flex-wrap:wrap}
+.badge{font-size:11px;padding:1.5px 7px;border-radius:5px;background:rgba(110,168,254,.14);
+       color:var(--accent);font-weight:600}
+.badge.warn{background:rgba(210,153,34,.15);color:var(--warn)}
+.fp{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--muted)}
+.msg{color:var(--muted);font-size:12.5px;margin-top:4px}
+.empty{color:var(--muted);text-align:center;padding:26px 0;font-size:13px}
+button{padding:9px 16px;border-radius:9px;border:1px solid var(--line);background:var(--panel);
+       color:var(--text);cursor:pointer;font-size:13.5px}button:hover{border-color:var(--accent)}
+.foot{color:var(--muted);font-size:11.5px;text-align:center;margin-top:22px}
+</style></head><body><div class="wrap">
+<header><h1>表情包感知</h1><span class="sub" id="conn">连接中…</span></header>
+<div class="grid" id="stats"></div>
+<h2>已缓存的指纹</h2><div id="items"><div class="empty">还没有缓存</div></div>
+<div style="margin-top:16px"><button id="refresh">刷新</button></div>
+<div class="foot">识别到表情包时，会告诉模型「这不是真实照片」，避免追问拍摄地点。</div>
+</div><script type="module">
+const PLUGIN_ID="astrbot_plugin_sticker_sense";
+const bridge=window.AstrBotPluginView||window.AstrBotPluginPage;
+const el=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function apiGet(ep){const p=await bridge.apiGet(`${PLUGIN_ID}/${ep}`);if(p&&p.ok===false)throw new Error(p.error);return p&&Object.prototype.hasOwnProperty.call(p,"data")?p.data:p;}
+function render(d){
+  el("stats").innerHTML=`
+    <div class="stat"><div class="k">自动纠偏</div><div class="v">${d.hint_enabled?"开":"关"}</div></div>
+    <div class="stat"><div class="k">视觉描述</div><div class="v">${d.vision_enabled?"开":"关"}</div></div>
+    <div class="stat"><div class="k">已缓存</div><div class="v">${d.cached??0}</div></div>`;
+  const its=d.items||[];
+  el("items").innerHTML=its.length?its.map(x=>`
+    <div class="card"><div class="row">
+      <span class="badge ${x.sub_type==1?"":"warn"}">${x.sub_type==1?"表情包":"贴图"}</span>
+      <span class="fp">${esc(x.fp||"")}</span>
+      <span style="color:var(--muted);font-size:12px">${esc(x.first_seen||"")}</span>
+    </div>
+    <div class="msg">${esc(x.summary||"")}</div></div>`).join(""):`<div class="empty">还没有缓存</div>`;
+}
+async function load(){try{el("conn").textContent="已连接";render(await apiGet("overview"));}catch(e){el("conn").textContent="连接失败";}}
+async function boot(){if(!bridge){el("conn").textContent="bridge 未加载";return;}
+ await bridge.ready();await load();el("refresh").onclick=load;setInterval(load,20000);}
+boot();
+</script></body></html>

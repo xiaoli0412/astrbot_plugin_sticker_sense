@@ -1,0 +1,16 @@
+name: astrbot_plugin_sticker_sense
+display_name: 表情包感知
+short_desc: 还原被丢弃的 sub_type，纠正模型把表情包当真实照片
+desc: >-
+  NapCat 在 CQ 码里带 sub_type（1=表情包/7=贴图）与 summary，但 AstrBot 的 Image 组件只保留 file/url
+  /path。本插件从原始事件捞回这两个字段，判定「这是表情包」，并以临时内容注入本轮请求，明确禁止模型追问拍摄地点、衣着、气温等只适用于真实照片的问题。可选
+  开启视觉描述。不接管上下文、不改人格。
+version: 0.1.0
+author: xiaoli0412
+repo: https://github.com/xiaoli0412/astrbot_plugin_sticker_sense
+category: 功能增强
+tags: [表情包, 图片理解, NapCat, 上下文纠偏]
+support_platforms:
+  - aiocqhttp
+astrbot_version: '>=4.24,<5'
+license: MIT
